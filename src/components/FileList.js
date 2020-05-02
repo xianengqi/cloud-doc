@@ -26,21 +26,6 @@ const FileList = ({ files, onFileClick, onFileEdit, onFileDelete }) => {
     if (escPressed && editStatus) {
       closeSearch()
     }
-    // const handleInputEvent = (event) => {
-    //   const { keyCode } = event
-    //   if (keyCode === 13 && editStatus) {
-    //     const editItem = files.find(file => file.id === editStatus)
-    //     onFileEdit(editItem.id, value)
-    //     setEditStatus(false)
-    //     setValue('')
-    //   } else if (keyCode === 27 && editStatus) {
-    //     closeSearch(event)
-    //   }
-    // }
-    // document.addEventListener('keyup', handleInputEvent)
-    // return () => {
-    //   document.removeEventListener('keyup', handleInputEvent)
-    // }
   })
   return (
     <ul className="list-group list-group-flush file-list">

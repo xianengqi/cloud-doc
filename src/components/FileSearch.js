@@ -23,18 +23,6 @@ const FileSearch = ({ title, onFileSearch }) => {
     if (escPressed && inputActive) {
       closeSearch()
     }
-    // const handleInputEvent = (event) => {
-    //   const { keyCode } = event
-    //   if (keyCode === 13 && inputActive) {
-    //     onFileSearch(value)
-    //   } else if(keyCode === 27 && inputActive) {
-    //     closeSearch(event)
-    //   }
-    // }
-    // document.addEventListener('keyup', handleInputEvent)
-    // return () => {
-    //   document.removeEventListener('keyup', handleInputEvent)
-    // }
   })
   useEffect(() => {
     if (inputActive) {
@@ -45,7 +33,7 @@ const FileSearch = ({ title, onFileSearch }) => {
     <div className="alert alert-primary">
       {
         !inputActive &&
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex justify-content-between align-items-center mb-0">
           <span>{ title }</span>
           <button type="button" className="icon-button" onClick={ () => { setInputActive(true) } }>
             <FontAwesomeIcon title="搜索" size="lg" icon={faSearch} />
