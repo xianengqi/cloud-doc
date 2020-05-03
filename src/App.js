@@ -8,6 +8,7 @@ import FileSearch from './components/FileSearch'
 import FileList from './components/FileList'
 import defaultFiles from './utils/defaultFiles'
 import BottomBtn from './components/BottomBtn'
+import TableList from './components/TableList'
 
 function App() {
   return (
@@ -43,8 +44,14 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="col-9 bg-primary right-panel">
-          <h1>This is the right</h1>
+        <div className="col-9 right-panel">
+          <TableList
+            files={defaultFiles}
+            unsaveIds={["1", "2"]}
+            onTabClick={(id) => {console.log('tabList => ', id);}}
+            onCloseTab={(id) => {console.log('Close => ', id);}}
+            activeId="1"
+          />
         </div>
       </div>
     </div>
