@@ -31,15 +31,15 @@ const FileList = ({ files, onFileClick, onFileEdit, onFileDelete }) => {
     <ul className="list-group list-group-flush file-list">
       {
         files && files.map(file => {
-          return <li className="row list-group-item bg-light d-flex align-items-center file-item" key={file.id}>
+          return <li className="row list-group-item bg-light d-flex align-items-center file-item mx-0" key={file.id}>
             {(file.id !== editStatus) &&
               <>
                 <span className="col-2"><FontAwesomeIcon icon={faMarkdown} /></span>
                 <span className="col-6 c-link" onClick={() => { onFileClick(file.id) }}>{file.title}</span>
-                <button type="button" className="icon-button col-1" onClick={() => { setEditStatus(file.id); setValue(file.title) }}>
+                <button type="button" className="icon-button col-2" onClick={() => { setEditStatus(file.id); setValue(file.title) }}>
                   <FontAwesomeIcon title="编辑" icon={faEdit} />
                 </button>
-                <button type="button" className="icon-button col-1" onClick={() => { onFileDelete(file.id) }}>
+                <button type="button" className="icon-button col-2" onClick={() => { onFileDelete(file.id) }}>
                   <FontAwesomeIcon title="删除" icon={faTrash} />
                 </button>
               </>
