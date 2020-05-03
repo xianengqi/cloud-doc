@@ -11,6 +11,12 @@ const defaultFiles = [
     body: 'Tow should be aware',
     createdAt: 1563762965704
   },
+  {
+    id: '3',
+    title: ' Tree post',
+    body: 'Tow should be aware',
+    createdAt: 1563762965704
+  },
 ]
 
 export default defaultFiles
