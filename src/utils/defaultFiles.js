@@ -2,7 +2,7 @@ const defaultFiles = [
   {
     id: '1',
     title: 'first post',
-    body: 'should be aware',
+    body: '## should be aware',
     createdAt: 1563762965704
   },
   {
