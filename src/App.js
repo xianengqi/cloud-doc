@@ -3,7 +3,7 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import SimpleMDE from "react-simplemde-editor";
 import "easymde/dist/easymde.min.css";
-import { faPlus, faFileImport } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faFileImport, faSave } from '@fortawesome/free-solid-svg-icons'
 import uuidv4 from 'uuid/dist/v4'
 
 import FileSearch from './components/FileSearch'
@@ -12,9 +12,14 @@ import defaultFiles from './utils/defaultFiles'
 import BottomBtn from './components/BottomBtn'
 import TableList from './components/TableList'
 import { flattenArr, objToArr } from './utils/helper'
+import fileHelper from './utils/fileHelper'
 
-const fs = window.require('fs')
-console.dir(fs)
+const { join } = window.require('path')
+const { remote } = window.require('electron')
+const Store = window.require('electron-store')
+
+const fileStore = new Store({'name': 'Files Data'})
+
 
 function App() {
   const [files, setFiles] = useState(flattenArr(defaultFiles))
@@ -23,6 +28,8 @@ function App() {
   const [unsaveFileIDs, setunsaveFileIDs] = useState([])
   const [searchedFiles, setSearchedFiles] = useState([])
   const filesArr = objToArr(files)
+  const savedLocation = remote.app.getPath('documents')
+
   const activeFile = files[activeFileID]
   const fileClick = (fileID) => {
     setActiveFileID(fileID)
@@ -54,9 +61,22 @@ function App() {
     setFiles(files)
     tabClose(id)
   }
-  const updateFIleName = (id, title) => {
+  const updateFIleName = (id, title, isNew) => {
     const midifiedFile = { ...files[id], title, isNew: false }
-    setFiles({ ...files, [id]: midifiedFile })
+    if (isNew) {
+      // 写入
+      fileHelper.writeFile(join(savedLocation, `${title}.md`), files[id].body).then(() => {
+        // 新建保存的路径
+        setFiles({ ...files, [id]: midifiedFile })
+      })
+    } else {
+      // 重命名
+      fileHelper.renameFile(join(savedLocation, `${files[id].title}.md`),
+        join(savedLocation, `${title}.md`),
+      ).then(() => {
+        setFiles({ ...files, [id]: midifiedFile })
+      })
+    }
   }
   const fileSearch = (keyword) => {
     const newFiles = filesArr.filter(file => file.title.includes(keyword))
@@ -76,6 +96,14 @@ function App() {
       isNew: true
     }
     setFiles({ ...files,  [newId]: newFile })
+  }
+  const saveCurrentFile = () => {
+    // 文件保存
+    fileHelper.writeFile(join(savedLocation, `${activeFile.title}.md`),
+      activeFile.body
+    ).then(() => {
+      setunsaveFileIDs(unsaveFileIDs.filter(id => id !== activeFile.id))
+    })
   }
   return (
     <div className="App container-fluid px-0">
@@ -130,6 +158,12 @@ function App() {
                 options={{
                   minHeight: '515px'
                 }}
+              />
+              <BottomBtn
+                text="保存"
+                colorClass="btn-primary"
+                icon={faSave}
+                onBtnClick={saveCurrentFile}
               />
             </>
           }

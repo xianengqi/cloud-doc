@@ -23,7 +23,7 @@ const FileList = ({ files, onFileClick, onFileEdit, onFileDelete }) => {
     // 引入自定义hook
     const editItem = files.find(file => file.id === editStatus)
     if (enterPressed && editStatus && value.trim() !== '') {
-      onFileEdit(editItem.id, value)
+      onFileEdit(editItem.id, value, editItem.isNew)
       setEditStatus(false)
       setValue('')
     }
