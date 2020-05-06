@@ -20,9 +20,23 @@ const Store = window.require('electron-store')
 
 const fileStore = new Store({'name': 'Files Data'})
 
+const saveFilesToStore = (files) => {
+  // 我们不需要把所有的信息都存储到文件数据库里面
+  const filesStoreObj = objToArr(files).reduce((result, file) => {
+    const { id, path, title, createdAt } = file
+    result[id] = {
+      id,
+      path,
+      title,
+      createdAt
+    }
+    return result
+  }, {})
+  fileStore.set('files', filesStoreObj)
+}
 
 function App() {
-  const [files, setFiles] = useState(flattenArr(defaultFiles))
+  const [files, setFiles] = useState(fileStore.get('files') || {})
   const [activeFileID, setActiveFileID] = useState('')
   const [openedFileIDs, setopenedFileIDs] = useState([])
   const [unsaveFileIDs, setunsaveFileIDs] = useState([])
@@ -62,19 +76,22 @@ function App() {
     tabClose(id)
   }
   const updateFIleName = (id, title, isNew) => {
-    const midifiedFile = { ...files[id], title, isNew: false }
+    const newPath = join(savedLocation, `${title}.md`)
+    const midifiedFile = { ...files[id], title, isNew: false, path: newPath }
+    const newFiles = { ...files, [id]: midifiedFile }
     if (isNew) {
       // 写入
-      fileHelper.writeFile(join(savedLocation, `${title}.md`), files[id].body).then(() => {
+      fileHelper.writeFile(newPath, files[id].body).then(() => {
         // 新建保存的路径
-        setFiles({ ...files, [id]: midifiedFile })
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
       })
     } else {
+      const oldPath = join(savedLocation, `${files[id].title}.md`)
       // 重命名
-      fileHelper.renameFile(join(savedLocation, `${files[id].title}.md`),
-        join(savedLocation, `${title}.md`),
-      ).then(() => {
-        setFiles({ ...files, [id]: midifiedFile })
+      fileHelper.renameFile(oldPath, newPath).then(() => {
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
       })
     }
   }
