@@ -71,9 +71,12 @@ function App() {
     }
   }
   const deleteFile = (id) => {
-    delete files[id]
-    setFiles(files)
-    tabClose(id)
+    fileHelper.deleteFile(files[id].path).then(() => {
+      delete files[id]
+      setFiles(files)
+      saveFilesToStore(files)
+      tabClose(id)
+    })
   }
   const updateFIleName = (id, title, isNew) => {
     const newPath = join(savedLocation, `${title}.md`)
