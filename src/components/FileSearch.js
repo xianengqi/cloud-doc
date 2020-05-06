@@ -14,6 +14,7 @@ const FileSearch = ({ title, onFileSearch }) => {
   const closeSearch = () => {
     setInputActive(false)
     setValue('')
+    onFileSearch('')
   }
   useEffect(() => {
     // 引入自定义hook

@@ -16,23 +16,73 @@ function App() {
   const [activeFileID, setActiveFileID] = useState('')
   const [openedFileIDs, setopenedFileIDs] = useState([])
   const [unsaveFileIDs, setunsaveFileIDs] = useState([])
+  const [searchedFiles, setSearchedFiles] = useState([])
   const openedFiles = openedFileIDs.map(openID => {
     return files.find(file => file.id === openID)
   })
   const activeFile = files.find(file => file.id === activeFileID)
+  const fileClick = (fileID) => {
+    setActiveFileID(fileID)
+    if (!openedFileIDs.includes(fileID)) {
+      setopenedFileIDs([ ...openedFileIDs, fileID ])
+    }
+  }
+  const tabList = (fileId) => {
+    setActiveFileID(fileId)
+  }
+  const tabClose = (id) => {
+    const tabsWithout = openedFileIDs.filter(fileID => fileID !== id)
+    setopenedFileIDs(tabsWithout)
+    if (tabsWithout.length > 0) {
+      setActiveFileID(tabsWithout[0])
+    } else {
+      setActiveFileID('')
+    }
+  }
+  const fileChange = (id, value) => {
+    const newFiles = files.map(file => {
+      if (file.id === id) {
+        file.body = value
+      }
+      return file
+    })
+    setFiles(newFiles)
+    if (!unsaveFileIDs.includes(id)) {
+      setunsaveFileIDs([ ...unsaveFileIDs, id ])
+    }
+  }
+  const deleteFile = (id) => {
+    const newFiles = files.filter(file => file.id !== id)
+    setFiles(newFiles)
+    tabClose(id)
+  }
+  const updateFIleName = (id, title) => {
+    const newFiles = files.map(file => {
+      if (file.id === id) {
+        file.title = title
+      }
+      return file
+    })
+    setFiles(newFiles)
+  }
+  const fileSearch = (keyword) => {
+    const newFiles = files.filter(file => file.title.includes(keyword))
+    setSearchedFiles(newFiles)
+  }
+  const fileListArr = (searchedFiles.length > 0) ? searchedFiles : files
   return (
     <div className="App container-fluid px-0">
       <div className="row no-gutters">
         <div className="col-3 bg-light left-panel">
           <FileSearch
             title="我的云文档"
-            onFileSearch={(value) => { console.log(value) }}
+            onFileSearch={fileSearch}
           />
           <FileList
-            files={files}
-            onFileClick={(id) => { console.log('click => ', id); }}
-            onFileDelete={(id) => { console.log('delete =>', id); }}
-            onFileEdit={(id, newValue) => { console.log('edit => ', id, newValue); }}
+            files={fileListArr}
+            onFileClick={fileClick}
+            onFileDelete={deleteFile}
+            onFileEdit={updateFIleName}
           />
           <div className="row no-gutters button-group">
             <div className="col">
@@ -62,13 +112,14 @@ function App() {
               <TableList
                 files={openedFiles}
                 unsaveIds={unsaveFileIDs}
-                onTabClick={(id) => { console.log('tabList => ', id); }}
-                onCloseTab={(id) => { console.log('Close => ', id); }}
+                onTabClick={tabList}
+                onCloseTab={tabClose}
                 activeId={activeFileID}
               />
               <SimpleMDE
+                key={activeFile && activeFile.id}
                 value={activeFile && activeFile.body}
-                onChange={(value) => { console.log('markdown =>', value); }}
+                onChange={(value) => { fileChange(activeFile.id, value) }}
                 options={{
                   minHeight: '515px'
                 }}
