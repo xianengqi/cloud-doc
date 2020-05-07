@@ -14,7 +14,7 @@ import TableList from './components/TableList'
 import { flattenArr, objToArr } from './utils/helper'
 import fileHelper from './utils/fileHelper'
 
-const { join } = window.require('path')
+const { join, basename, extname, dirname } = window.require('path')
 const { remote } = window.require('electron')
 const Store = window.require('electron-store')
 
@@ -78,15 +78,20 @@ function App() {
     }
   }
   const deleteFile = (id) => {
-    fileHelper.deleteFile(files[id].path).then(() => {
-      delete files[id]
-      setFiles(files)
-      saveFilesToStore(files)
-      tabClose(id)
-    })
+    if (files[id].isNew) {
+      const { [id]: value, ...afterDelete } = files
+      setFiles(afterDelete)
+    } else {
+      fileHelper.deleteFile(files[id].path).then(() => {
+        const { [id]: value, ...afterDelete } = files
+        setFiles(afterDelete)
+        saveFilesToStore(afterDelete)
+        tabClose(id)
+      })
+    }
   }
   const updateFIleName = (id, title, isNew) => {
-    const newPath = join(savedLocation, `${title}.md`)
+    const newPath = isNew ? join(savedLocation, `${title}.md`) : join(dirname(files[id].path), `${title}.md`)
     const midifiedFile = { ...files[id], title, isNew: false, path: newPath }
     const newFiles = { ...files, [id]: midifiedFile }
     if (isNew) {
@@ -97,7 +102,7 @@ function App() {
         saveFilesToStore(newFiles)
       })
     } else {
-      const oldPath = join(savedLocation, `${files[id].title}.md`)
+      const oldPath = files[id].path
       // 重命名
       fileHelper.renameFile(oldPath, newPath).then(() => {
         setFiles(newFiles)
@@ -124,12 +129,64 @@ function App() {
     }
     setFiles({ ...files,  [newId]: newFile })
   }
-  const saveCurrentFile = () => {
+  const saveCurrentFile = (id) => {
     // 文件保存
-    fileHelper.writeFile(join(savedLocation, `${activeFile.title}.md`),
+    fileHelper.writeFile(activeFile.path,
       activeFile.body
     ).then(() => {
       setunsaveFileIDs(unsaveFileIDs.filter(id => id !== activeFile.id))
+      if (!unsaveFileIDs.includes(id)) {
+        setunsaveFileIDs([ ...unsaveFileIDs, id ])
+      }
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+  const importFiles = () => {
+    remote.dialog.showOpenDialog({
+      title: '选择导入的 markdown 文件',
+      properties: [
+        'openFile',
+        'multiSelections',
+      ],
+      filters: [
+        {
+          name: 'Markdown files',
+          extensions: ['md']
+        }
+      ]
+    }).then(paths => {
+      if (Array.isArray(paths.filePaths)) {
+        const filteredPaths = (paths.filePaths).filter(path => {
+          const alreadyAdded = Object.values(files).find(file => {
+            return file.path === path
+          })
+          return !alreadyAdded
+        })
+        const importFilesArr = filteredPaths.map(path => {
+          return {
+            id: uuidv4(),
+            title: basename(path, extname(path)),
+            path,
+          }
+        })
+        console.log(importFilesArr, '=> import');
+        const newFiles = { ...files, ...flattenArr(importFilesArr) }
+        console.log(newFiles, '=> newFiles')
+        setFiles(newFiles)
+        saveFilesToStore(newFiles)
+        if (importFilesArr.length > 0) {
+          remote.dialog.showMessageBox({
+            type: 'info',
+            title: `成功导入了${importFilesArr.length}个文件`,
+            message: `成功导入了${importFilesArr.length}个文件`
+          })
+        }
+      }
+      // console.log(paths.canceled)
+      // console.log(paths.filePaths)
+    }).catch(err => {
+      console.log(err)
     })
   }
   return (
@@ -160,7 +217,7 @@ function App() {
                 text="导入"
                 colorClass="btn-success"
                 icon={faFileImport}
-                onBtnClick={(e) => { console.log('onBtnImport =>', e); }}
+                onBtnClick={importFiles}
               />
             </div>
           </div>
