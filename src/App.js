@@ -48,6 +48,7 @@ function App() {
   const fileClick = (fileID) => {
     setActiveFileID(fileID)
     const currentFile = files[fileID]
+    console.log(currentFile);
     if (!currentFile.isLoaded) {
       fileHelper.readFile(currentFile.path).then(value => {
         const newFile = {  ...files[fileID], body: value, isLoaded: true }
