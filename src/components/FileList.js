@@ -91,12 +91,6 @@ const FileList = ({ files, onFileClick, onFileEdit, onFileDelete }) => {
               <>
                 <span className="col-2"><FontAwesomeIcon icon={faMarkdown} /></span>
                 <span className="col-6 c-link" onClick={() => { onFileClick(file.id) }}>{file.title}</span>
-                <button type="button" className="icon-button col-2" onClick={() => { setEditStatus(file.id); setValue(file.title) }}>
-                  <FontAwesomeIcon title="编辑" icon={faEdit} />
-                </button>
-                <button type="button" className="icon-button col-2" onClick={() => { onFileDelete(file.id) }}>
-                  <FontAwesomeIcon title="删除" icon={faTrash} />
-                </button>
               </>
             }
             {

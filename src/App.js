@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import SimpleMDE from "react-simplemde-editor";
@@ -13,9 +13,11 @@ import BottomBtn from './components/BottomBtn'
 import TableList from './components/TableList'
 import { flattenArr, objToArr } from './utils/helper'
 import fileHelper from './utils/fileHelper'
+import useIPCRenderer from './hooks/useIPCRenderer'
+// import { ipcRenderer } from 'electron';
 
 const { join, basename, extname, dirname } = window.require('path')
-const { remote } = window.require('electron')
+const { remote, ipcRenderer } = window.require('electron')
 const Store = window.require('electron-store')
 
 const fileStore = new Store({'name': 'Files Data'})
@@ -72,10 +74,12 @@ function App() {
     }
   }
   const fileChange = (id, value) => {
-    const newFile = { ...files[id], body: value }
-    setFiles({ ...files, [id]:  newFile})
-    if (!unsaveFileIDs.includes(id)) {
-      setunsaveFileIDs([ ...unsaveFileIDs, id ])
+    if (value !== files[id].body) {
+      const newFile = { ...files[id], body: value }
+      setFiles({ ...files, [id]:  newFile})
+      if (!unsaveFileIDs.includes(id)) {
+        setunsaveFileIDs([ ...unsaveFileIDs, id ])
+      }
     }
   }
   const deleteFile = (id) => {
@@ -130,17 +134,14 @@ function App() {
     }
     setFiles({ ...files,  [newId]: newFile })
   }
-  const saveCurrentFile = (id) => {
+  const saveCurrentFile = () => {
     // 文件保存
-    fileHelper.writeFile(activeFile.path,
-      activeFile.body
-    ).then(() => {
+    const { path, body, title } = activeFile
+    fileHelper.writeFile(path, body).then(() => {
       setunsaveFileIDs(unsaveFileIDs.filter(id => id !== activeFile.id))
-      if (!unsaveFileIDs.includes(id)) {
-        setunsaveFileIDs([ ...unsaveFileIDs, id ])
-      }
-    }).catch(err => {
-      console.log(err)
+      // if (getAutoSync()) {
+      //   ipcRenderer.send('upload-file', {key: `${title}.md`, path })
+      // }
     })
   }
   const importFiles = () => {
@@ -190,6 +191,13 @@ function App() {
       console.log(err)
     })
   }
+  useIPCRenderer({
+    'create-new-file': createNewFile,
+    'import-file': importFiles,
+    'save-edit-file': saveCurrentFile,
+    'search-file': fileSearch
+  })
+
   return (
     <div className="App container-fluid px-0">
       <div className="row no-gutters">
@@ -243,12 +251,6 @@ function App() {
                 options={{
                   minHeight: '515px'
                 }}
-              />
-              <BottomBtn
-                text="保存"
-                colorClass="btn-primary"
-                icon={faSave}
-                onBtnClick={saveCurrentFile}
               />
             </>
           }

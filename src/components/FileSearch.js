@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons'
 import PropTypes from 'prop-types'
 import useKeyPress from '../hooks/useKeyPress'
+import useIPCRenderer from '../hooks/useIPCRenderer'
 
 const FileSearch = ({ title, onFileSearch }) => {
   const [ inputActive, setInputActive ] = useState(false)
@@ -10,12 +11,18 @@ const FileSearch = ({ title, onFileSearch }) => {
   const enterPressed = useKeyPress(13)
   const escPressed = useKeyPress(27)
   let node = useRef(null)
+  const startSearch = () => {
+    setInputActive(true)
+  }
   // 拿到键盘的触发事件
   const closeSearch = () => {
     setInputActive(false)
     setValue('')
-    onFileSearch('')
+    onFileSearch(false)
   }
+  useIPCRenderer({
+    'search-file': startSearch
+  })
   useEffect(() => {
     // 引入自定义hook
     if (enterPressed && inputActive) {
@@ -31,25 +38,23 @@ const FileSearch = ({ title, onFileSearch }) => {
     }
   }, [inputActive])
   return (
-    <div className="alert alert-primary">
+    <div className="alert alert-primary d-flex justify-content-between align-items-center mb-0">
       {
         !inputActive &&
-        <div className="d-flex justify-content-between align-items-center mb-0">
+        <>
           <span>{ title }</span>
-          <button type="button" className="icon-button" onClick={ () => { setInputActive(true) } }>
+          <button type="button" className="icon-button" onClick={startSearch }>
             <FontAwesomeIcon title="搜索" size="lg" icon={faSearch} />
           </button>
-        </div>
+        </>
       }
       {
         inputActive &&
         <>
-        <div className="d-flex justify-content-between align-items-center">
           <input  className="form-control" value={value} ref={node} onChange={(e) => {setValue(e.target.value)} } />
           <button type="button" className="icon-button" onClick={closeSearch}>
             <FontAwesomeIcon title="关闭" size="lg" icon={faTimes} />
           </button>
-        </div>
         </>
       }
     </div>
@@ -58,7 +63,7 @@ const FileSearch = ({ title, onFileSearch }) => {
 
 FileSearch.propTypes = {
   title: PropTypes.string,
-  onFileSearch: PropTypes.func.isRequired
+  onFileSearch: PropTypes.func.isRequired,
 }
 
 FileSearch.defaultProps = {
