@@ -21,6 +21,7 @@ const { remote, ipcRenderer } = window.require('electron')
 const Store = window.require('electron-store')
 
 const fileStore = new Store({'name': 'Files Data'})
+const settingsStore = new Store({name: 'Settings'})
 
 const saveFilesToStore = (files) => {
   // 我们不需要把所有的信息都存储到文件数据库里面
@@ -44,7 +45,7 @@ function App() {
   const [unsaveFileIDs, setunsaveFileIDs] = useState([])
   const [searchedFiles, setSearchedFiles] = useState([])
   const filesArr = objToArr(files)
-  const savedLocation = remote.app.getPath('documents')
+  const savedLocation = settingsStore.get('savedFileLocation') || remote.app.getPath('documents')
 
   const activeFile = files[activeFileID]
   const fileClick = (fileID) => {
