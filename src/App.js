@@ -23,6 +23,7 @@ const Store = window.require('electron-store')
 const fileStore = new Store({'name': 'Files Data'})
 const settingsStore = new Store({name: 'Settings'})
 
+
 const saveFilesToStore = (files) => {
   // 我们不需要把所有的信息都存储到文件数据库里面
   const filesStoreObj = objToArr(files).reduce((result, file) => {
