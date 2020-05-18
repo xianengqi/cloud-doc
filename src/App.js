@@ -22,7 +22,7 @@ const Store = window.require('electron-store')
 
 const fileStore = new Store({'name': 'Files Data'})
 const settingsStore = new Store({name: 'Settings'})
-
+const getAutoSync = () => ['accessKey', 'secretKey', 'bucketName', 'enableAutoSync'].every(key => !!settingsStore.get(key))
 
 const saveFilesToStore = (files) => {
   // 我们不需要把所有的信息都存储到文件数据库里面
@@ -141,9 +141,9 @@ function App() {
     const { path, body, title } = activeFile
     fileHelper.writeFile(path, body).then(() => {
       setunsaveFileIDs(unsaveFileIDs.filter(id => id !== activeFile.id))
-      // if (getAutoSync()) {
-      //   ipcRenderer.send('upload-file', {key: `${title}.md`, path })
-      // }
+      if (getAutoSync()) {
+        ipcRenderer.send('upload-file', {key: `${title}.md`, path })
+      }
     })
   }
   const importFiles = () => {
